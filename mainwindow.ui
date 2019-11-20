@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>551</width>
-    <height>448</height>
+    <width>874</width>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,56 +20,73 @@
       <item>
        <widget class="QPlainTextEdit" name="plainTextEdit">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="maximumSize">
          <size>
-          <width>478</width>
-          <height>16777215</height>
+          <width>1920</width>
+          <height>12000</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Courier New</family>
+          <pointsize>72</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="plainText">
-         <string>Barbórka    
-który        
-przepiórka     
-włóczniachór           
-mózg        
-równy            
-włóknocórka         
-ogórek      
+         <string>Barbórka
+który
+przepiórka
+włócznia
+chór
+mózg
+równy
+włókno
+córka
+ogórek
 rózga
-wójtczółno       
-oprócz      
-wróbeldopóki  
-płótno       
-różny             
-wróżbagóra           
-półka        
-skóra              
-wyściółkajaskółka     
-póki          
-stróż               
-źródłoJózef          
-póty          
-szczególnie   
-żółćkłótnia       
-późno        
-tchórz            
-żółtkokról            
-próba        
-wiewiórka      
-żółtykrólik         
-próchno   
-wiór                 
-żółwkrótki         
-próżny 
-włóczęga 
+wójt
+czółno
+oprócz
+wróbel
+dopóki
+płótno
+różny
+wróżba
+góra
+półka
+skóra
+wyściółka
+jaskółka
+póki
+stróż
+źródło
+Józef
+póty
+szczególnie
+żółć
+kłótnia
+późno
+tchórz
+żółtko
+król
+próba
+wiewiórka
+żółty
+królik
+próchno
+wiór
+żółw
+krótki
+próżny
+włóczęga
 włóczka
-
-
 miluchny
 staruszek
 tyciuni
