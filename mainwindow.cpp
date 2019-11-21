@@ -102,20 +102,44 @@ void MainWindow::speak()
                 lines.end());
 
     m_scheme = ui.schemas->currentText().split(" ");
+
+    QVector<QLocale> availableLocales = m_speech->availableLocales();
+    for (auto const & scheme: m_scheme)
+    {
+        auto sl = m_schemeLocale.size();
+        for (auto const & locale: availableLocales)
+        {
+            if (QLocale::languageToString(locale.language()).contains(scheme, Qt::CaseInsensitive))
+            {
+                m_schemeLocale.push_back(locale);
+            }
+        }
+        if (m_schemeLocale.size() == sl)
+        {
+            qWarning() << "No locale for " << scheme << ", using " << availableLocales.front() << " instead.";
+            m_schemeLocale.push_back(availableLocales.front());
+        }
+    }
+
+    qDebug() << m_schemeLocale;
+
     auto c = m_scheme.size();
     lines.erase(lines.end() - lines.size() % c, lines.end()); // make size divisible by c
-    m_texts.resize(lines.size() / c);
+    m_groups.resize(lines.size() / c);
 
     int i = 0;
     for (auto const & line: lines)
     {
-        m_texts[i/c].push_back(line);
+        m_groups[i/c].push_back(line);
         ++i;
     }
 
-    qDebug() << m_texts;
+    qDebug() << m_groups;
 
-    std::random_shuffle(m_texts.begin(), m_texts.end());
+    std::random_shuffle(m_groups.begin(), m_groups.end());
+
+    m_currentGroup = m_groups.begin();
+    m_currentText = 0;
 
     sayNext();
 }
@@ -127,7 +151,7 @@ void MainWindow::stop()
 
 void MainWindow::sayNext()
 {
-    if (m_texts.empty())
+    if (m_currentGroup == m_groups.end()/*m_groups.empty()*/)
     {
         addWordToPlainText();
 
@@ -139,9 +163,19 @@ void MainWindow::sayNext()
     {
         addWordToPlainText();
 
-        currentWord = m_texts.front().front();
-        m_texts.pop_front();
+        currentWord = (*m_currentGroup)[m_currentText];//m_groups.front().front();
+        qDebug() << "currentWord: " << currentWord;
+        qDebug() << "currentLocale: " << m_schemeLocale[m_currentText];
+
+        m_speech->setLocale(m_schemeLocale[m_currentText]);
         m_speech->say(currentWord);
+
+        ++m_currentText;
+        if (m_currentText >= m_scheme.size())
+        {
+            ++m_currentGroup;
+            m_currentText = 0;
+        }
     }
 }
 
@@ -158,6 +192,7 @@ void MainWindow::showOriginal()
 void MainWindow::addWordToPlainText()
 {
     ui.plainTextEdit->insertPlainText(currentWord + "\n");
+    ui.plainTextEdit->ensureCursorVisible();
 }
 
 void MainWindow::setRate(int rate)

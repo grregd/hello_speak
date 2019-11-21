@@ -63,7 +63,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 public slots:
     void speak();
@@ -87,13 +87,17 @@ public slots:
 
 
 private:
+    using Groups = QVector< QVector < QString > >;
     Ui::MainWindow ui;
     QTextToSpeech *m_speech;
     QVector<QVoice> m_voices;
-    QVector< QVector < QString > > m_texts;
+    Groups m_groups;
     QString hiddentText;
     QString currentWord;
     QStringList m_scheme;
+    Groups::const_iterator m_currentGroup;
+    int m_currentText;
+    QVector< QLocale > m_schemeLocale;
 };
 
 #endif
