@@ -130,8 +130,7 @@ void MainWindow::speak()
     int i = 0;
     for (auto const & line: lines)
     {
-        m_groups[i/c].push_back(line);
-        ++i;
+        m_groups[i++/c].push_back(line);
     }
 
     qDebug() << m_groups;
@@ -139,7 +138,9 @@ void MainWindow::speak()
     std::random_shuffle(m_groups.begin(), m_groups.end());
 
     m_currentGroup = m_groups.begin();
-    m_currentText = 0;
+    m_currentText = ui.reverseSchema->isChecked()
+            ? m_scheme.size()-1
+            : 0;
 
     sayNext();
 }
@@ -164,23 +165,21 @@ void MainWindow::sayNext()
         addWordToPlainText();
 
         currentWord = (*m_currentGroup)[m_currentText];
-        qDebug() << "currentWord: " << currentWord;
-        qDebug() << "currentLocale: " << m_schemeLocale[m_currentText];
+        m_speech->setLocale(m_schemeLocale[m_currentText]);
 
-        if (ui.reverseSchema->checkState() == Qt::Checked)
-            m_speech->setLocale(m_schemeLocale[m_schemeLocale.size()-1-m_currentText]);
-        else
-            m_speech->setLocale(m_schemeLocale[m_currentText]);
+        qDebug() << "currentWord: " << currentWord;
+        qDebug() << "currentLocale: " << m_speech->locale();
 
         m_speech->say(currentWord);
 
+        auto reverse = ui.reverseSchema->isChecked();
+        m_currentText += reverse ? -1 : 1;
 
-        ++m_currentText;
-
-        if (m_currentText >= m_scheme.size())
+        if ((reverse && m_currentText < 0) ||
+            (!reverse && m_currentText >= m_scheme.size()))
         {
             ++m_currentGroup;
-            m_currentText = 0;
+            m_currentText = reverse ? m_scheme.size()-1 : 0;
         }
     }
 }
