@@ -151,7 +151,7 @@ void MainWindow::stop()
 
 void MainWindow::sayNext()
 {
-    if (m_currentGroup == m_groups.end()/*m_groups.empty()*/)
+    if (m_currentGroup == m_groups.end())
     {
         addWordToPlainText();
 
@@ -163,14 +163,20 @@ void MainWindow::sayNext()
     {
         addWordToPlainText();
 
-        currentWord = (*m_currentGroup)[m_currentText];//m_groups.front().front();
+        currentWord = (*m_currentGroup)[m_currentText];
         qDebug() << "currentWord: " << currentWord;
         qDebug() << "currentLocale: " << m_schemeLocale[m_currentText];
 
-        m_speech->setLocale(m_schemeLocale[m_currentText]);
+        if (ui.reverseSchema->checkState() == Qt::Checked)
+            m_speech->setLocale(m_schemeLocale[m_schemeLocale.size()-1-m_currentText]);
+        else
+            m_speech->setLocale(m_schemeLocale[m_currentText]);
+
         m_speech->say(currentWord);
 
+
         ++m_currentText;
+
         if (m_currentText >= m_scheme.size())
         {
             ++m_currentGroup;
