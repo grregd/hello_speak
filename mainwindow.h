@@ -90,7 +90,7 @@ private:
     Ui::MainWindow ui;
     QTextToSpeech *m_speech;
     QVector<QVoice> m_voices;
-    QStringList words;
+    QVector< QVector < QString > > m_texts;
     QString hiddentText;
     QString currentWord;
 };

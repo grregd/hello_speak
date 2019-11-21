@@ -90,13 +90,26 @@ void MainWindow::speak()
     ui.nextButton->setEnabled(true);
     ui.repeatButton->setEnabled(true);
 
-    words = hiddentText.split("\n");
-    words.erase(std::remove_if(
-                    words.begin(), words.end(),
-                    [](auto const & word){ return word.isEmpty(); }),
-                words.end());
+    auto lines = hiddentText.split("\n");
+    lines.erase(std::remove_if(
+                    lines.begin(), lines.end(),
+                    [](auto const & line){ return line.isEmpty(); }),
+                lines.end());
 
-    std::random_shuffle(words.begin(), words.end());
+    int c = 3;
+    lines.erase(lines.end() - lines.size() % c, lines.end()); // make size divisible by c
+    m_texts.resize(lines.size() / c);
+
+    int i = 0;
+    for (auto const & line: lines)
+    {
+        m_texts[i/c].push_back(line);
+        ++i;
+    }
+
+    qDebug() << m_texts;
+
+    std::random_shuffle(m_texts.begin(), m_texts.end());
 
     sayNext();
 }
@@ -108,7 +121,7 @@ void MainWindow::stop()
 
 void MainWindow::sayNext()
 {
-    if (words.empty())
+    if (m_texts.empty())
     {
         addWordToPlainText();
 
@@ -120,8 +133,8 @@ void MainWindow::sayNext()
     {
         addWordToPlainText();
 
-        currentWord = words.front();
-        words.pop_front();
+        currentWord = m_texts.front().front();
+        m_texts.pop_front();
         m_speech->say(currentWord);
     }
 }
