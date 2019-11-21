@@ -93,6 +93,7 @@ private:
     QVector< QVector < QString > > m_texts;
     QString hiddentText;
     QString currentWord;
+    QStringList m_scheme;
 };
 
 #endif

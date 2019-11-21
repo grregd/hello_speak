@@ -63,6 +63,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.speech.tts=true \n qt.speech.tts.*=true"));
 
+    ui.schemas->addItem("Polish");
+    ui.schemas->addItem("Polish Polish");
+    ui.schemas->addItem("Polish English");
+    ui.schemas->addItem("English Polish");
+
     // Populate engine selection list
     ui.engine->addItem("Default", QString("default"));
     foreach (QString engine, QTextToSpeech::availableEngines())
@@ -96,7 +101,8 @@ void MainWindow::speak()
                     [](auto const & line){ return line.isEmpty(); }),
                 lines.end());
 
-    int c = 3;
+    m_scheme = ui.schemas->currentText().split(" ");
+    auto c = m_scheme.size();
     lines.erase(lines.end() - lines.size() % c, lines.end()); // make size divisible by c
     m_texts.resize(lines.size() / c);
 
@@ -198,6 +204,7 @@ void MainWindow::engineSelected(int index)
     // Populate the languages combobox before connecting its signal.
     QVector<QLocale> locales = m_speech->availableLocales();
     QLocale current = m_speech->locale();
+    qDebug() << "current locale: " << current;
     foreach (const QLocale &locale, locales) {
         QString name(QString("%1 (%2)")
                      .arg(QLocale::languageToString(locale.language()))
@@ -225,6 +232,7 @@ void MainWindow::languageSelected(int language)
 {
     QLocale locale = ui.language->itemData(language).toLocale();
     m_speech->setLocale(locale);
+    qDebug() << "languageSelected" << "setLocale: " << locale;
 }
 
 void MainWindow::voiceSelected(int index)
