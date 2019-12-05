@@ -54,6 +54,7 @@
 #include <algorithm>
 #include <QLoggingCategory>
 #include <QString>
+#include <QStandardPaths>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -62,6 +63,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui.setupUi(this);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.speech.tts=true \n qt.speech.tts.*=true"));
+
+    currentDirectory.cd(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+    currentDirectory.cd("Dytkandor");
+    qDebug() << currentDirectory.dirName() << currentDirectory.entryList(QDir::NoDot | QDir::NoDotDot | QDir::Files);
+
+    ui.listWidget->addItems(currentDirectory.entryList(QDir::NoDot |
+                                        QDir::NoDotDot |
+                                        QDir::Files));
 
     ui.schemas->addItem("Polish");
     ui.schemas->addItem("Polish Polish");
@@ -83,12 +92,33 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui.nextButton, &QPushButton::clicked, this, &MainWindow::sayNext);
     connect(ui.repeatButton, &QPushButton::clicked, this, &MainWindow::sayRepeat);
+
+    ui.nextButton->setEnabled(false);
+    ui.repeatButton->setEnabled(false);
 }
 
 void MainWindow::speak()
 {
+    qDebug() << ">>>>>>>>>>>>>>";
+    qDebug() << ui.listWidget->currentItem();
+    qDebug() << ui.listWidget->currentItem()->text();
+    qDebug() << currentDirectory.absoluteFilePath(ui.listWidget->currentItem()->text());
+    QFile textFile(currentDirectory.absoluteFilePath(ui.listWidget->currentItem()->text()));
+    textFile.open(QIODevice::ReadOnly);
+
+    m_scheme = QString(textFile.readLine()).remove("\r\n").split(" ");
+    qDebug() << "m_scheme: " << m_scheme;
+
+    hiddentText.clear();
+    while (!textFile.atEnd())
+        hiddentText += QString(textFile.readLine()).remove("\r");
+    qDebug() << "hiddentText: " << hiddentText;
+    qDebug() << "ui.plainTextEdit->toPlainText(): " << ui.plainTextEdit->toPlainText();
+    qDebug() << "<<<<<<<<<<<<<<";
+
+
     currentWord.clear();
-    hiddentText = ui.plainTextEdit->toPlainText();
+//    hiddentText = ui.plainTextEdit->toPlainText();
     ui.plainTextEdit->clear();
 
     ui.speakButton->setEnabled(false);
@@ -100,9 +130,11 @@ void MainWindow::speak()
                     lines.begin(), lines.end(),
                     [](auto const & line){ return line.isEmpty(); }),
                 lines.end());
+    qDebug() << "lines: " << lines;
 
-    m_scheme = ui.schemas->currentText().split(" ");
+//    m_scheme = ui.schemas->currentText().split(" ");
 
+    m_schemeLocale.clear();
     QVector<QLocale> availableLocales = m_speech->availableLocales();
     for (auto const & scheme: m_scheme)
     {
@@ -125,6 +157,7 @@ void MainWindow::speak()
 
     auto c = m_scheme.size();
     lines.erase(lines.end() - lines.size() % c, lines.end()); // make size divisible by c
+    m_groups.clear();
     m_groups.resize(lines.size() / c);
 
     int i = 0;
@@ -133,7 +166,7 @@ void MainWindow::speak()
         m_groups[i++/c].push_back(line);
     }
 
-    qDebug() << m_groups;
+    qDebug() << "m_groups: " << m_groups;
 
     std::random_shuffle(m_groups.begin(), m_groups.end());
 
@@ -196,6 +229,10 @@ void MainWindow::showOriginal()
 
 void MainWindow::addWordToPlainText()
 {
+    qDebug() << __PRETTY_FUNCTION__
+             << "m_currentText: " << m_currentText
+             << "m_scheme.size(): " << m_scheme.size();
+
     ui.plainTextEdit->insertPlainText(currentWord + "\n");
     ui.plainTextEdit->ensureCursorVisible();
 }

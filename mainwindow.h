@@ -58,6 +58,7 @@
 #include "ui_mainwindow.h"
 
 #include <QTextToSpeech>
+#include <QDir>
 
 class MainWindow : public QMainWindow
 {
@@ -85,7 +86,6 @@ public slots:
 
     void localeChanged(const QLocale &locale);
 
-
 private:
     using Groups = QVector< QVector < QString > >;
     Ui::MainWindow ui;
@@ -98,6 +98,7 @@ private:
     Groups::const_iterator m_currentGroup;
     int m_currentText;
     QVector< QLocale > m_schemeLocale;
+    QDir currentDirectory;
 };
 
 #endif
