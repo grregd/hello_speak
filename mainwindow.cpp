@@ -55,6 +55,8 @@
 #include <QLoggingCategory>
 #include <QString>
 #include <QStandardPaths>
+#include <QMessageBox>
+#include <QIcon>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -64,8 +66,28 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.speech.tts=true \n qt.speech.tts.*=true"));
 
-    currentDirectory.cd(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
-    currentDirectory.cd("Dytkandor");
+    QString folder;
+    QString iniFile(QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/dyktandor.txt");
+    QFile config(iniFile);
+    if (config.open(QIODevice::ReadOnly))
+    {
+        folder = QString(config.readLine()).remove("\n").remove("\r");
+    }
+
+    if (folder.isEmpty() || !currentDirectory.cd(folder))
+    {
+        QString filesFolder(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        filesFolder += "/Dyktandor";
+        if (!currentDirectory.cd(filesFolder))
+        {
+            QMessageBox messageBox(QMessageBox::Critical, "DyktandorApp",
+                                   QString("Nie można znaleźć pliku\n'%1'\nani katalogu\n'%2'.\n\nNie da się pracować.")
+                                   .arg(iniFile).arg(filesFolder), QMessageBox::Ok);
+            messageBox.exec();
+            exit(-1);
+        }
+    }
+
     qDebug() << currentDirectory.dirName() << currentDirectory.entryList(QDir::NoDot | QDir::NoDotDot | QDir::Files);
 
     ui.listWidget->addItems(currentDirectory.entryList(QDir::NoDot |
@@ -106,7 +128,7 @@ void MainWindow::speak()
     QFile textFile(currentDirectory.absoluteFilePath(ui.listWidget->currentItem()->text()));
     textFile.open(QIODevice::ReadOnly);
 
-    m_scheme = QString(textFile.readLine()).remove("\r\n").split(" ");
+    m_scheme = QString(textFile.readLine()).remove("\r").remove("\n").split(" ");
     qDebug() << "m_scheme: " << m_scheme;
 
     hiddentText.clear();
@@ -144,6 +166,7 @@ void MainWindow::speak()
             if (QLocale::languageToString(locale.language()).contains(scheme, Qt::CaseInsensitive))
             {
                 m_schemeLocale.push_back(locale);
+                break;
             }
         }
         if (m_schemeLocale.size() == sl)
@@ -153,7 +176,7 @@ void MainWindow::speak()
         }
     }
 
-    qDebug() << m_schemeLocale;
+    qDebug() << "m_schemeLocale: " << m_schemeLocale;
 
     auto c = m_scheme.size();
     lines.erase(lines.end() - lines.size() % c, lines.end()); // make size divisible by c
